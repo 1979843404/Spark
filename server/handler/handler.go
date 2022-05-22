@@ -11,8 +11,7 @@ import (
 func InitRouter(ctx *gin.RouterGroup, auth gin.HandlerFunc) {
 	ctx.Any(`/bridge/push`, bridgePush)
 	ctx.Any(`/bridge/pull`, bridgePull)
-	ctx.Any(`/device/terminal`, initTerminal) // Browser, handle websocket events for web terminal.
-	ctx.Any(`/client/update`, checkUpdate)    // Client, for update.
+	ctx.Any(`/client/update`, checkUpdate) // Client, for update.
 	group := ctx.Group(`/`, auth)
 	{
 		group.POST(`/device/screenshot/get`, getScreenshot)
@@ -26,6 +25,7 @@ func InitRouter(ctx *gin.RouterGroup, auth gin.HandlerFunc) {
 		group.POST(`/device/:act`, callDevice)
 		group.POST(`/client/check`, checkClient)
 		group.POST(`/client/generate`, generateClient)
+		group.Any(`/device/terminal`, initTerminal) // Browser, handle websocket events for web terminal.
 	}
 }
 

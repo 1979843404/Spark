@@ -123,12 +123,12 @@ $ statik -m -src="./web/dist" -f -dest="./server/embed" -p web -ns web
 # 在使用类Unix系统时，运行以下命令。
 $ go mod tidy
 $ go mod download
-$ ./build.client.sh
+$ ./scripts/build.client.sh
 $ statik -m -src="./built" -f -dest="./server/embed" -include=* -p built -ns built
 
 
 # 最终开始编译服务端。
-$ ./build.server.sh
+$ ./scripts/build.server.sh
 ```
 
 然后打开`releases`目录，放入上文提到的配置文件，选择对应平台的服务端运行即可。

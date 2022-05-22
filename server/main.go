@@ -73,7 +73,7 @@ func main() {
 	common.Melody.HandleMessage(wsOnMessage)
 	common.Melody.HandleMessageBinary(wsOnMessageBinary)
 	common.Melody.HandleDisconnect(wsOnDisconnect)
-	go common.HealthCheckWS(90, common.Melody)
+	go wsHealthCheck(common.Melody)
 
 	srv := &http.Server{Addr: config.Config.Listen, Handler: app}
 	go func() {
@@ -179,4 +179,53 @@ func wsOnDisconnect(session *melody.Session) {
 	}
 	common.Devices.Remove(session.UUID)
 
+}
+
+func wsHealthCheck(container *melody.Melody) {
+	const MaxIdleSeconds = 90
+	go func() {
+		// ping client and update latency every 3 seconds
+		ping := func(uuid string, s *melody.Session) {
+			t := time.Now().UnixMilli()
+			trigger := utils.GetStrUUID()
+			common.SendPack(modules.Packet{Act: `ping`, Event: trigger}, s)
+			common.AddEventOnce(func(packet modules.Packet, session *melody.Session) {
+				val, ok := common.Devices.Get(uuid)
+				if ok {
+					deviceInfo := val.(*modules.Device)
+					deviceInfo.Latency = uint(time.Now().UnixMilli()-t) / 2
+				}
+			}, uuid, trigger, 3*time.Second)
+		}
+		for range time.NewTicker(3 * time.Second).C {
+			container.IterSessions(func(uuid string, s *melody.Session) bool {
+				go ping(uuid, s)
+				return true
+			})
+		}
+	}()
+	for now := range time.NewTicker(30 * time.Second).C {
+		timestamp := now.Unix()
+		// stores sessions to be disconnected
+		queue := make([]*melody.Session, 0)
+		container.IterSessions(func(uuid string, s *melody.Session) bool {
+			val, ok := s.Get(`LastPack`)
+			if !ok {
+				queue = append(queue, s)
+				return true
+			}
+			lastPack, ok := val.(int64)
+			if !ok {
+				queue = append(queue, s)
+				return true
+			}
+			if timestamp-lastPack > MaxIdleSeconds {
+				queue = append(queue, s)
+			}
+			return true
+		})
+		for i := 0; i < len(queue); i++ {
+			queue[i].Close()
+		}
+	}
 }

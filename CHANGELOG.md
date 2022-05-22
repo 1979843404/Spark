@@ -1,3 +1,13 @@
+## v0.0.9
+
+* Optimize: explorer performance.
+* Optimize: security vulnerability.
+
+* 优化：文件浏览器性能。
+* 优化：安全问题。
+
+
+
 ## v0.0.8
 
 * Add: file upload.

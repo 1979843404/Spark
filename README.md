@@ -123,12 +123,12 @@ $ statik -m -src="./web/dist" -f -dest="./server/embed" -p web -ns web
 # When you're using unix-like OS, you can use this.
 $ go mod tidy
 $ go mod download
-$ ./build.client.sh
+$ ./scripts/build.client.sh
 $ statik -m -src="./built" -f -dest="./server/embed" -include=* -p built -ns built
 
 
 # Finally we're compiling the server side.
-$ ./build.server.sh
+$ ./scripts/build.server.sh
 ```
 
 Then you can find executable files in `releases` directory.

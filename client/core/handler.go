@@ -8,10 +8,27 @@ import (
 	Screenshot "Spark/client/service/screenshot"
 	"Spark/client/service/terminal"
 	"Spark/modules"
+	"github.com/kataras/golog"
 	"os"
 	"reflect"
 	"strconv"
 )
+
+var pingTick = 0
+
+func ping(pack modules.Packet, wsConn *common.Conn) {
+	common.SendCb(modules.Packet{Code: 0}, pack, wsConn)
+	pingTick++
+	device, err := GetPartialInfo(pingTick >= 20)
+	if err != nil {
+		golog.Error(err)
+		return
+	}
+	if pingTick >= 20 {
+		pingTick = 0
+	}
+	common.SendPack(modules.CommonPack{Act: `setDevice`, Data: *device}, wsConn)
+}
 
 func offline(pack modules.Packet, wsConn *common.Conn) {
 	common.SendCb(modules.Packet{Code: 0}, pack, wsConn)

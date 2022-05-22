@@ -66,7 +66,8 @@ func listDeviceFiles(ctx *gin.Context) {
 // client and let it upload the file specified.
 func getDeviceFile(ctx *gin.Context) {
 	var form struct {
-		File string `json:"file" yaml:"file" form:"file" binding:"required"`
+		File    string `json:"file" yaml:"file" form:"file" binding:"required"`
+		Preview bool   `json:"preview" yaml:"preview" form:"preview"`
 	}
 	target, ok := checkForm(ctx, &form)
 	if !ok {
@@ -128,18 +129,25 @@ func getDeviceFile(ctx *gin.Context) {
 		called = true
 		common.RemoveEvent(trigger)
 		src := bridge.src
+		for k, v := range src.Request.Header {
+			if strings.HasPrefix(k, `File`) {
+				ctx.Header(k, v[0])
+			}
+		}
 		if src.Request.ContentLength > 0 {
 			ctx.Header(`Content-Length`, strconv.FormatInt(src.Request.ContentLength, 10))
 		}
-		ctx.Header(`Accept-Ranges`, `bytes`)
-		ctx.Header(`Content-Transfer-Encoding`, `binary`)
-		ctx.Header(`Content-Type`, `application/octet-stream`)
-		filename := src.GetHeader(`FileName`)
-		if len(filename) == 0 {
-			filename = path.Base(strings.ReplaceAll(form.File, `\`, `/`))
+		if !form.Preview {
+			ctx.Header(`Accept-Ranges`, `bytes`)
+			ctx.Header(`Content-Transfer-Encoding`, `binary`)
+			ctx.Header(`Content-Type`, `application/octet-stream`)
+			filename := src.GetHeader(`FileName`)
+			if len(filename) == 0 {
+				filename = path.Base(strings.ReplaceAll(form.File, `\`, `/`))
+			}
+			filename = url.PathEscape(filename)
+			ctx.Header(`Content-Disposition`, `attachment; filename* = UTF-8''`+filename+`;`)
 		}
-		filename = url.PathEscape(filename)
-		ctx.Header(`Content-Disposition`, `attachment; filename* = UTF-8''`+filename+`;`)
 
 		if partial {
 			if rangeEnd == 0 {

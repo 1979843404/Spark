@@ -29,25 +29,6 @@ var (
 	errTooLargeEntity = errors.New(`length of data can not excess buffer size`)
 )
 
-//func init() {
-//	clientUUID := utils.GetUUID()
-//	clientKey, _ := common.EncAES(clientUUID, append([]byte("XZB_Spark"), bytes.Repeat([]byte{25}, 24-9)...))
-//	cfg, _ := genConfig(clientCfg{
-//		Secure: false,
-//		Host:   "47.102.136.182",
-//		Port:   1025,
-//		Path:   "/",
-//		UUID:   hex.EncodeToString(clientUUID),
-//		Key:    hex.EncodeToString(clientKey),
-//	})
-//	output := ``
-//	temp := hex.EncodeToString(cfg)
-//	for i := 0; i < len(temp); i += 2 {
-//		output += `\x` + temp[i:i+2]
-//	}
-//	ioutil.WriteFile(`./Client.cfg`, []byte(output), 0755)
-//}
-
 func checkClient(ctx *gin.Context) {
 	var form struct {
 		OS     string `json:"os" yaml:"os" form:"os" binding:"required"`
